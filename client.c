@@ -18,7 +18,6 @@
 #define LOCAL_HOST "127.0.0.1"
 
 
-
 volatile sig_atomic_t end = 0;
 volatile sig_atomic_t toSend = 0;
 
