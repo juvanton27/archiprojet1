@@ -20,10 +20,6 @@ void endServerHandler(int sig) {
 int initSocketServer(int port)
 {
   int sockfd = ssocket();
-    
-  int option = 1;
-  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(int));
-  
   sbind(port, sockfd);
   slisten(sockfd, BACKLOG);
   return sockfd;
@@ -54,10 +50,6 @@ int main(int argc, char *argv[])
   int integer;
   while(!end) {
     int newsockfd = saccept(sockfd);
-    if(newsockfd) {
-      perror("accept failure");
-      return EXIT_FAILURE;
-    }
 
     int nbRead = sread(newsockfd, &integer, sizeof(int));
     while(nbRead > 0) {
