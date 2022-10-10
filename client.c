@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
+#include "utils.h"
 #define BUFFER_SIZE 10000
 #define LOCAL_HOST "127.0.0.1"
 
@@ -38,39 +39,6 @@ int initSocketClient(char* localhost, int port){
     return socketfd;
 }
 
-ssize_t sread(int fd, void *buf, size_t count) {
-  ssize_t r = read(fd, buf, count);
-  checkNeg(r , "Error READ");
-  return r;
-}
-
-int sclose(int fd) {
-  int resv = close(fd);
-  checkNeg(resv, "Error CLOSE");
-  return resv;
-}
-
-void ssigaction(int signum, void (*handler)(int signum)) {
-  struct sigaction action;
-  action.sa_handler = handler;
-  ssigfillset(&action.sa_mask);
-  action.sa_flags = 0;
-  
-  int r = sigaction (signum, &action, NULL);
-  checkNeg(r, "Error sigaction");
-}
-
-void ssigemptyset(sigset_t *set) {
-  int res = sigemptyset(set);
-  checkNeg(res, "sigemptyset");
-}
-
-
-void ssigaddset(sigset_t *set, int signum) {
-  int res = sigaddset(set, signum);
-  checkNeg(res, "sigaddset");
-}
-
 int main(int argc, char **argv) {
     ssigaction(SIGINT, sigint_handler);
     sigset_t set;
@@ -88,8 +56,7 @@ int main(int argc, char **argv) {
     int key = atoi(argv[2]);
     int req = atoi(argv[4]);
     int sec = atoi(argv[6]);
-    char *token;
-    char line[] = argv[7];
+    char* line = argv[7];
     char *search = ":";
 
     // server will point to 127.0.0.1
@@ -97,7 +64,7 @@ int main(int argc, char **argv) {
 
  
     // port will point to 2241 for example.
-    port = strtok(NULL, search);
+    port = atoi(strtok(NULL, search));
 
 
     printf("KEY SIZE : %d  -  REQUESTS/SECONDS : %d  -  SECONDS : %d  -  SERVER : %s -   TCP PORT : %d \n", key, req, sec, server,port);
