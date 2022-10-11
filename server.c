@@ -14,22 +14,24 @@
 volatile sig_atomic_t end;
 
 void endServerHandler(int sig) {
+  printf("[+] Stoping server ...\n");
   end = 1;
 }
 
-int initSocketServer(int port)
+int initSocketServer(int port, int nbThreads)
 {
   int sockfd = ssocket();
   sbind(port, sockfd);
-  slisten(sockfd, BACKLOG);
+  slisten(sockfd, nbThreads);
   return sockfd;
 }
 
 int main(int argc, char *argv[])
 {
+  // Add Ctrl+C handling
   ssigaction(SIGINT, endServerHandler);
 
-
+  // Handle the args
   int port, nbThreads, nbBytes;
   for(int i=0; i<argc; i++) {
     if(strcmp(argv[i], "-j") == 0) {
@@ -42,23 +44,25 @@ int main(int argc, char *argv[])
       port = atoi(argv[i+1]);
     }
   }
-  printf("port: %i, number of threads : %i, number of bytes: %i\n", port, nbThreads, nbBytes);
+  printf("PORT : %i, NUMBER OF THREADDS : %i, NUMBER OF BYTES : %i\n", port, nbThreads, nbBytes);
 
-  int sockfd = initSocketServer(port);
-  printf("Server is listening on port %i ...\n", port);
+  // Init the server
+  int sockfd = initSocketServer(port, nbThreads);
+  printf("[+] Server is listening on port %i ...\n", port);
 
   int integer;
   while(!end) {
     int newsockfd = saccept(sockfd);
 
+    // Listen to client's requests
     int nbRead = sread(newsockfd, &integer, sizeof(int));
     while(nbRead > 0) {
       printf("Integer received: %i\n", integer);
-
       nbRead = sread(newsockfd, &integer, sizeof(int));
     }
   }
 
+  // Close the connection
   sclose(sockfd);
   return 0;
 }
