@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
     char* server;
     int port;
-    int key = atoi(argv[2]);
+    int keyBytes = atoi(argv[2]);
     int req = atoi(argv[4]);
     int sec = atoi(argv[6]);
     char* line = argv[7];
@@ -41,20 +41,31 @@ int main(int argc, char **argv) {
     // port will point to 2241 for example.
     port = atoi(strtok(NULL, search));
 
-    printf("KEY SIZE : %d  -  REQUESTS/SECONDS : %d  -  SECONDS : %d  -  SERVER : %s -   TCP PORT : %d \n", key, req, sec, server,port);
+    printf("KEY SIZE : %d  -  REQUESTS/SECONDS : %d  -  SECONDS : %d  -  SERVER : %s -   TCP PORT : %d \n", keyBytes, req, sec, server,port);
 
     // Socket
     sockfd = initSocketClient(server, port);
 
-    // struct request going to be send randomly
+    // Generate key
+    printf("[+] Generating key ...\n");
+    uint8_t **key;
+    key = (uint8_t**) malloc(keyBytes*sizeof(uint8_t*));
+    for(int row=0; row<keyBytes; row++) {
+        key[row] = (uint8_t*) malloc(keyBytes*sizeof(uint8_t));
+        for(int col=0; col<keyBytes; col++) {
+            key[row][col] = 0;
+        }
+    }
 
+    // struct request going to be send randomly
     Request request;
     int i = 0;
     int nbytes;
     while(i < req){
         request.index = i;
         request.key = key;
-        if ((nbytes = write(sockfd, &request, sizeof(Request)) != sizeof(Request))){
+        printf("index sent: %i %i\n", request.index, request.key[0][0]);
+        if ((nbytes = swrite(sockfd, &request, sizeof(Request)) != sizeof(Request))){
              printf("error sending request");
         }
         i++;

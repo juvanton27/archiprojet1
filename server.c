@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "request.h"
 
 #define NB_FILES 1000
 
@@ -37,9 +38,10 @@ int main(int argc, char *argv[])
       port = atoi(argv[i+1]);
     }
   }
-  printf("PORT : %i, NUMBER OF THREADDS : %i, NUMBER OF BYTES : %i\n", port, nbThreads, nbBytes);
+  printf("PORT : %i, NUMBER OF THREADS : %i, NUMBER OF BYTES : %i\n", port, nbThreads, nbBytes);
 
   // Init files
+  printf("[+] Generating files ...\n");
   for(int i=0; i<NB_FILES; i++) {
     files[i] = (volatile uint8_t**) malloc(nbBytes*sizeof(uint8_t*));
     for(int row=0; row<nbBytes; row++) {
@@ -55,15 +57,15 @@ int main(int argc, char *argv[])
   int sockfd = initSocketServer(port, nbThreads);
   printf("[+] Server is listening on port %i ...\n", port);
 
-  int integer;
+  Request request;
   while(!end) {
     int newsockfd = saccept(sockfd);
 
     // Listen to client's requests
-    int nbRead = sread(newsockfd, &integer, sizeof(int));
+    int nbRead = sread(newsockfd, &request, sizeof(Request));
     while(nbRead > 0) {
-      printf("Integer received: %i\n", integer);
-      nbRead = sread(newsockfd, &integer, sizeof(int));
+      printf("index received: %i %i\n", request.index, **request.key);
+      nbRead = sread(newsockfd, &request, sizeof(Request));
     }
   }
 
