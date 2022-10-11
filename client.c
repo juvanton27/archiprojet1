@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     int nbytes;
     int s = 0; //seconds
 
-    while(s < sec){
+    while(s < sec && !end){
         int i = 0;
         while(i < req){
             request.index = i;
