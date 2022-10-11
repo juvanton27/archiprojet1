@@ -3,7 +3,8 @@
 #include "utils.h"
 
 typedef struct {
-    int index;
+    uint32_t index;
+    uint32_t size;
     uint8_t **key;
 } Request;
 

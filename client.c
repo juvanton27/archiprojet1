@@ -67,17 +67,18 @@ int main(int argc, char **argv) {
 
     while(s < sec){
         int i = 0;
-    while(i < req){
-        request.index = i;
-        request.key = key;
-        printf("index sent: %i %i\n", request.index, request.key[0][0]);
-        if ((nbytes = swrite(sockfd, &request, sizeof(Request)) != sizeof(Request))){
-             printf("error sending request");
+        while(i < req){
+            request.index = i;
+            request.size = keyBytes*keyBytes;
+            request.key = key;
+            printf("index sent: %i %i\n", request.index, request.size);
+            if ((nbytes = swrite(sockfd, &request, sizeof(Request)) != sizeof(Request))){
+                printf("error sending request");
+            }
+            i++;
         }
-        i++;
-    }
-    sleep(1);
-    s++;
+        sleep(1);
+        s++;
     }  
     
     
