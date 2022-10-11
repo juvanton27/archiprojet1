@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     // Listen to client's requests
     int nbRead = sread(newsockfd, &request, sizeof(Request));
     while(nbRead > 0) {
-      printf("index received: %i %i\n", request.index, **request.key);
+      printf("index received: %i\n", request.index);
       nbRead = sread(newsockfd, &request, sizeof(Request));
     }
   }
