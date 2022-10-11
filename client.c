@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "request.h"
 
 #define BUFFER_SIZE 10000
 #define LOCAL_HOST "127.0.0.1"
@@ -45,16 +46,30 @@ int main(int argc, char **argv) {
     // Socket
     sockfd = initSocketClient(server, port);
 
-    // Prompt
-    char buf[BUFFER_SIZE];
-    int val;
-    int nbCharRd = sread(0, &buf, BUFFER_SIZE);
-    while(nbCharRd > 0) {
-        val = atoi(buf);
-        swrite(sockfd, &val, sizeof(int));
-        nbCharRd = sread(0, &buf, BUFFER_SIZE);
-    }
+    // struct request going to be send randomly
 
+    Request request;
+    int i = 0;
+    int nbytes;
+    while(i < req){
+        request.index = i;
+        request.key = key;
+        if ((nbytes = write(sockfd, &request, sizeof(Request)) != sizeof(Request))){
+             printf("error sending request");
+        }
+        i++;
+    }
+    
+    
+    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! A METTRE DANS SERVER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    Request received_request;
+    int size;
+
+    if( (size = recv ( sockfd, (void*)&received_request, sizeof(Request), 0)) >= 0)
+    {
+     // check the size
+    }
+    */
     return EXIT_SUCCESS;
 }
 
