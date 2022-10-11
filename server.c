@@ -1,17 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-
 #include "utils.h"
 
-#define BACKLOG 5
+#define NB_FILES 1000
 
 volatile sig_atomic_t end;
+
+volatile uint8_t **files[NB_FILES];
 
 void endServerHandler(int sig) {
   printf("[+] Stoping server ...\n");
@@ -45,6 +38,18 @@ int main(int argc, char *argv[])
     }
   }
   printf("PORT : %i, NUMBER OF THREADDS : %i, NUMBER OF BYTES : %i\n", port, nbThreads, nbBytes);
+
+  // Init files
+  for(int i=0; i<NB_FILES; i++) {
+    files[i] = (volatile uint8_t**) malloc(nbBytes*sizeof(uint8_t*));
+    for(int row=0; row<nbBytes; row++) {
+      files[i][row] = (uint8_t*) malloc(nbBytes*sizeof(uint8_t));
+      for(int col=0; col<nbBytes; col++) {
+        files[i][row][col] = 0;
+      }
+    }
+  }
+
 
   // Init the server
   int sockfd = initSocketServer(port, nbThreads);

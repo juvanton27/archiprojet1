@@ -1,20 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/ipc.h>
-#include <stdarg.h>
-#include <time.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/sem.h>
-#include <sys/shm.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <string.h>
-
 #include "utils.h"
 
 #define BUFFER_SIZE 10000
@@ -26,7 +9,7 @@ volatile sig_atomic_t end = 0;
 int sockfd;
 
 void endClientHandler(int sig) {
-    printf("[+] End of client ...\n");
+    printf("[+] Stoping client ...\n");
     end = 1;
 }
 

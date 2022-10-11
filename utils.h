@@ -15,6 +15,10 @@
 #include <signal.h>
 #include <sys/ipc.h>
 #include <poll.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 //******************************************************
