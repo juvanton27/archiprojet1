@@ -13,7 +13,8 @@
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <sys/socket.h>
-
+#include <stdio.h>
+#include <unistd.h>
 #include "utils.h"
 
 

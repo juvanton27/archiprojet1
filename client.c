@@ -1,5 +1,7 @@
 #include "utils.h"
 #include "request.h"
+#include <stdio.h>
+#include <unistd.h>
 
 #define BUFFER_SIZE 10000
 #define LOCAL_HOST "127.0.0.1"
@@ -59,8 +61,12 @@ int main(int argc, char **argv) {
 
     // struct request going to be send randomly
     Request request;
-    int i = 0;
+    
     int nbytes;
+    int s = 0; //seconds
+
+    while(s < sec){
+        int i = 0;
     while(i < req){
         request.index = i;
         request.key = key;
@@ -70,6 +76,9 @@ int main(int argc, char **argv) {
         }
         i++;
     }
+    sleep(1);
+    s++;
+    }  
     
     
     /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! A METTRE DANS SERVER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
