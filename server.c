@@ -128,16 +128,16 @@ int main(int argc, char *argv[])
       port = atoi(argv[i + 1]);
     }
   }
-  printf("[+] Launched with options ... port : %i, threads used : %i, size of files (in bytes) : %i\n", port, nbThreads, fileSize);
+  printf("[+] Launched with options ... port : %i - threads used : %i - size of files (in bytes) : %i\n", port, nbThreads, fileSize);
 
-  // Initiate an array of files
+  // Initiate an array of 1000 files
   initFiles(fileSize);
 
   // Initiate the server
   int sockfd = initSocketServer(port, nbThreads);
 
   // Listen to client's requests
-  // Don't know the size of the key yet but should be smaller than the size of the file so "sizeof(uint8_t)*fileSize*fileSize"
+  // TO DO : Don't know the size of the key yet but should be smaller than the size of the file so "sizeof(uint8_t)*fileSize*fileSize"
   size_t requestSize = sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * fileSize * fileSize);
   uint8_t *request = (uint8_t *)malloc(requestSize);
   while (!end)
@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
       uint8_t *key = malloc(sizeof(uint8_t) * keySize);
       key = (uint8_t *)(request + 8);
 
+      // Encrypte file with key
       uint8_t ** keyMatrix = arrayToMatrix(key, keySize);
       uint8_t ** encryptedMatrix = encryptFile(files[fileIndex], fileSize, keyMatrix, keySize);
       uint8_t * encryptedArray = matrixToArray((void **) encryptedMatrix, fileSize);
