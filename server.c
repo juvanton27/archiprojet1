@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "request.h"
 
 #define NB_FILES 1000
 
@@ -81,21 +80,29 @@ int main(int argc, char *argv[])
 
   // Init files
   initFiles(nbBytes);
-  display((void **)files[0], nbBytes);
+  // display((void **)files[0], nbBytes);
 
   // Init the server
   int sockfd = initSocketServer(port, nbThreads);
 
   // Listen to client's requests
-  Request request;
+  // 4 bytes : index, 4 bytes : size of the key, N*N bytes : key
+  uint8_t * request = (uint8_t *) malloc(sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*nbBytes*nbBytes));
   while (!end)
   {
     int newsockfd = saccept(sockfd);
-    int nbRead = sread(newsockfd, &request, sizeof(Request));
+    int nbRead = sread(newsockfd, &(*request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*nbBytes*nbBytes));
     while (nbRead > 0)
     {
-      // display((void **) request.key, request.size);
-      nbRead = sread(newsockfd, &request, sizeof(Request));
+      // Retreive key from the request
+      uint32_t keySize = *(uint32_t *) (request+4);
+      uint8_t * key = malloc(sizeof(uint8_t)*keySize*keySize);
+      for(int i=8; i<(keySize*keySize)+8; i++) {
+        key[i-8] = request[i];
+      }
+      
+      display(key, sizeof(uint8_t)*keySize*keySize);
+      nbRead = sread(newsockfd, *(&request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*nbBytes*nbBytes));
     }
   }
 

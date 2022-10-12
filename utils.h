@@ -19,14 +19,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 
 //******************************************************
 // LECTURE CLAVIER
 //******************************************************
-
-void display(void ** matrix, int size);
-
+void display(void * array, int size);
 /** 
  * Lit une ligne à l'entrée standard et la copie dans le buffer s
  * PRE: s : tableau de char de taille sz

@@ -1,7 +1,4 @@
 #include "utils.h"
-#include "request.h"
-#include <stdio.h>
-#include <unistd.h>
 
 #define BUFFER_SIZE 10000
 #define LOCAL_HOST "127.0.0.1"
@@ -26,17 +23,16 @@ int initSocketClient(char* localhost, int port){
     return socketfd;
 }
 
-uint8_t ** generateKey(int size) {
-    printf("[+] Generating key ...\n");
-    uint8_t **key;
-    key = (uint8_t**) malloc(size*sizeof(uint8_t*));
-    for(int row=0; row<size; row++) {
-        key[row] = (uint8_t*) malloc(size*sizeof(uint8_t));
-        for(int col=0; col<size; col++) {
-            key[row][col] = (size*(row))+col;
-        }
+uint8_t * generateRequest(uint32_t index, uint32_t size) {
+    printf("[+] Generating request ...\n");
+    // 4 bytes : index, 4 bytes : size of the key, N*N bytes : key
+    uint8_t * request = (uint8_t *) malloc(sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*size*size));
+    *(uint32_t *)request = index;
+    *(uint32_t *) (request+4) = size;
+    for(int i=8; i<(size*size)+8; i++) {
+        request[i] = i-8;
     }
-    return key;
+    return request;
 }
 
 int main(int argc, char **argv) {
@@ -61,38 +57,18 @@ int main(int argc, char **argv) {
     // Socket
     sockfd = initSocketClient(server, port);
 
-    // Generate key
-    uint8_t ** key = generateKey(keyBytes);
-
-    // struct request going to be send randomly
-    Request request;
-    
     int s = 0; //seconds
-
     while(s < sec && !end){
         int i = 0;
         while(i < req){
-            request.index = i;
-            request.size = keyBytes;
-            request.key = key;
-            display((void **) request.key, keyBytes);
-            swrite(sockfd, &request, sizeof(Request));
+            // Generate request
+            uint8_t * request = generateRequest(i, keyBytes);
+            swrite(sockfd, &(*request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*keyBytes*keyBytes));
             i++;
         }
         sleep(1);
         s++;
-    }  
-    
-    
-    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! A METTRE DANS SERVER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    Request received_request;
-    int size;
-
-    if( (size = recv ( sockfd, (void*)&received_request, sizeof(Request), 0)) >= 0)
-    {
-     // check the size
     }
-    */
     return EXIT_SUCCESS;
 }
 
