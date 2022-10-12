@@ -37,20 +37,31 @@ void initFiles(int size)
   }
 }
 
-uint8_t **encryptFile(volatile uint8_t **file, int fileSize, uint8_t **key, int keySize)
+uint8_t ** encryptFile(volatile uint8_t **file, int fileSize, uint8_t **key, int keySize)
 {
   int size = fileSize / keySize;
   printf("%i\n", size);
-  uint8_t **result = (uint8_t **)malloc(fileSize * sizeof(uint8_t));
+  printf("File\n");
+  displayAsMatrix((void **) file, fileSize);
+  printf("Key\n");
+  displayAsMatrix((void **) key, keySize);
+  uint8_t ** result = (uint8_t ** )malloc(fileSize * sizeof(uint8_t *));
+  for(int i=0; i<fileSize; i++) {
+    result[i] = (uint8_t *) malloc(fileSize*sizeof(uint8_t));
+  }
   for (int i = 0; i < fileSize; i++)
   {
-    result[i] = (uint8_t *)malloc(fileSize * sizeof(uint8_t));
-  }
-  for (int row=0; row<fileSize; row++) {
-    for (int col=0; col<fileSize; col++) {
-      result[row][col] += file[row][col]*key[col][row];
+    for (int j = 0; j < fileSize; j++)
+    {
+      result[i][j] = 0;
+      for (int k = 0; k < keySize; k++)
+      {
+        result[i][j] += file[i][k] * key[k][j];
+      }
     }
   }
+  printf("Result\n");
+  displayAsMatrix((void **) result, fileSize);
   return result;
 }
 
@@ -60,7 +71,7 @@ int main(int argc, char *argv[])
   ssigaction(SIGINT, endServerHandler);
 
   // Handle the args
-  int port, nbThreads, nbBytes;
+  int port, nbThreads, fileSize;
   for (int i = 0; i < argc; i++)
   {
     if (strcmp(argv[i], "-j") == 0)
@@ -69,47 +80,54 @@ int main(int argc, char *argv[])
     }
     if (strcmp(argv[i], "-s") == 0)
     {
-      nbBytes = atoi(argv[i + 1]);
+      fileSize = atoi(argv[i + 1]);
     }
     if (strcmp(argv[i], "-p") == 0)
     {
       port = atoi(argv[i + 1]);
     }
   }
-  // printf("PORT : %i, NUMBER OF THREADS : %i, NUMBER OF BYTES : %i\n", port, nbThreads, nbBytes);
+  // printf("PORT : %i, NUMBER OF THREADS : %i, NUMBER OF BYTES : %i\n", port, nbThreads, fileSize);
 
   // Init files
-  initFiles(nbBytes);
-  // display((void **)files[0], nbBytes);
+  initFiles(fileSize);
 
   // Init the server
   int sockfd = initSocketServer(port, nbThreads);
 
   // Listen to client's requests
   // 4 bytes : index, 4 bytes : size of the key, N*N bytes : key
-  uint8_t * request = (uint8_t *) malloc(sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*nbBytes*nbBytes));
+  // Don't know the size of the key yet but should be smaller than the size of the file so "sizeof(uint8_t)*fileSize*fileSize"
+  uint8_t *request = (uint8_t *)malloc(sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * fileSize * fileSize));
   while (!end)
   {
     int newsockfd = saccept(sockfd);
-    int nbRead = sread(newsockfd, &(*request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*nbBytes*nbBytes));
+    int nbRead = sread(newsockfd, &(*request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * fileSize * fileSize));
     while (nbRead > 0)
     {
-      // Retreive key from the request
-      uint32_t keySize = *(uint32_t *) (request+4);
-      uint8_t ** key = malloc(sizeof(uint8_t *)*keySize);
-      for(int i=0; i<keySize; i++) {
-        key[i] = malloc(sizeof(uint8_t)*keySize);
+      // Retreive key informations from the request
+      // uint32_t keyIndex = *(uint32_t *) request;
+      uint32_t keySize = *(uint32_t *)(request + 4);
+      uint8_t *key = malloc(sizeof(uint8_t) * keySize);
+      key = (uint8_t *)(request + 8);
+
+      // Convert array to matrix
+      uint8_t ** keyMatrix = (uint8_t **) malloc(sizeof(uint8_t *)*keySize);
+      for (int i = 0; i < keySize; i++)
+      {
+        keyMatrix[i] = (uint8_t *)malloc(sizeof(uint8_t) * keySize);
       }
-      for(int i=8; i<keySize+8; i++) {
-        for(int j=0; j<keySize; j++) {
-          key[i-8][j] = request[i+j];
+      for (int i = 0; i < keySize; i++)
+      {
+        for (int j = 0; j < keySize; j++)
+        {
+          keyMatrix[i][j] = key[(i * keySize) + j];
         }
       }
-      
-      display(request, sizeof(uint8_t)*keySize*keySize);
-      displayAsMAtrix((void **) key, keySize);
 
-      nbRead = sread(newsockfd, *(&request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*nbBytes*nbBytes));
+      encryptFile(files[0], fileSize, keyMatrix, keySize);
+
+      nbRead = sread(newsockfd, *(&request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * fileSize * fileSize));
     }
   }
 

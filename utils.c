@@ -33,11 +33,11 @@ void display(void * array, int size) {
     printf("\n");
 }
 
-void displayAsMAtrix(void ** array, int size) {
+void displayAsMatrix(void ** array, int size) {
   uint8_t ** arr = (uint8_t **) array;
   for(int i=0; i<size; i++) {
     for (int j=0; j<size; j++) {
-      printf("%i\n", arr[i][j]);
+      printf("%i ", arr[i][j]);
     }
     printf("\n");
   }
