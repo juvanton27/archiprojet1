@@ -96,12 +96,19 @@ int main(int argc, char *argv[])
     {
       // Retreive key from the request
       uint32_t keySize = *(uint32_t *) (request+4);
-      uint8_t * key = malloc(sizeof(uint8_t)*keySize*keySize);
-      for(int i=8; i<(keySize*keySize)+8; i++) {
-        key[i-8] = request[i];
+      uint8_t ** key = malloc(sizeof(uint8_t *)*keySize);
+      for(int i=0; i<keySize; i++) {
+        key[i] = malloc(sizeof(uint8_t)*keySize);
+      }
+      for(int i=8; i<keySize+8; i++) {
+        for(int j=0; j<keySize; j++) {
+          key[i-8][j] = request[i+j];
+        }
       }
       
-      display(key, sizeof(uint8_t)*keySize*keySize);
+      display(request, sizeof(uint8_t)*keySize*keySize);
+      displayAsMAtrix((void **) key, keySize);
+
       nbRead = sread(newsockfd, *(&request), sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t)*nbBytes*nbBytes));
     }
   }

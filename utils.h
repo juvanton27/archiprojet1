@@ -26,6 +26,7 @@
 // LECTURE CLAVIER
 //******************************************************
 void display(void * array, int size);
+void displayAsMAtrix(void ** array, int size);
 /** 
  * Lit une ligne à l'entrée standard et la copie dans le buffer s
  * PRE: s : tableau de char de taille sz
