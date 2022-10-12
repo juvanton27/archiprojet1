@@ -26,6 +26,19 @@ int initSocketClient(char* localhost, int port){
     return socketfd;
 }
 
+uint8_t ** generateKey(int size) {
+    printf("[+] Generating key ...\n");
+    uint8_t **key;
+    key = (uint8_t**) malloc(size*sizeof(uint8_t*));
+    for(int row=0; row<size; row++) {
+        key[row] = (uint8_t*) malloc(size*sizeof(uint8_t));
+        for(int col=0; col<size; col++) {
+            key[row][col] = (size*(row))+col;
+        }
+    }
+    return key;
+}
+
 int main(int argc, char **argv) {
     ssigaction(SIGINT, endClientHandler);
 
@@ -49,32 +62,21 @@ int main(int argc, char **argv) {
     sockfd = initSocketClient(server, port);
 
     // Generate key
-    printf("[+] Generating key ...\n");
-    uint8_t **key;
-    key = (uint8_t**) malloc(keyBytes*sizeof(uint8_t*));
-    for(int row=0; row<keyBytes; row++) {
-        key[row] = (uint8_t*) malloc(keyBytes*sizeof(uint8_t));
-        for(int col=0; col<keyBytes; col++) {
-            key[row][col] = 0;
-        }
-    }
+    uint8_t ** key = generateKey(keyBytes);
 
     // struct request going to be send randomly
     Request request;
     
-    int nbytes;
     int s = 0; //seconds
 
     while(s < sec && !end){
         int i = 0;
         while(i < req){
             request.index = i;
-            request.size = keyBytes*keyBytes;
+            request.size = keyBytes;
             request.key = key;
-            printf("index sent: %i %i\n", request.index, request.size);
-            if ((nbytes = swrite(sockfd, &request, sizeof(Request)) != sizeof(Request))){
-                printf("error sending request");
-            }
+            display((void **) request.key, keyBytes);
+            swrite(sockfd, &request, sizeof(Request));
             i++;
         }
         sleep(1);

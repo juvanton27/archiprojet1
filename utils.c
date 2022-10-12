@@ -24,6 +24,17 @@
 // LECTURE CLAVIER
 //******************************************************//
 
+void display(void ** matrix, int size) {
+  uint8_t ** result = (uint8_t **) matrix;
+  printf("%i\n", result[0][0]);
+  for(int i=0; i<size; i++) {
+    for(int j=0; j<size; j++) {
+      printf("%i\t", result[i][j]);
+    }
+    printf("\n");
+  }
+}
+
 // Version modifiée de la fonction: litEtValideChaine (cf. TP6 de l'UE I2011)
 
 int readLimitedLine (char* s, int sz) {

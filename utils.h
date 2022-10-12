@@ -25,6 +25,8 @@
 // LECTURE CLAVIER
 //******************************************************
 
+void display(void ** matrix, int size);
+
 /** 
  * Lit une ligne à l'entrée standard et la copie dans le buffer s
  * PRE: s : tableau de char de taille sz
