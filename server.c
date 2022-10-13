@@ -6,6 +6,7 @@
  *              GLOBALS
 ***************************************/
 
+int sockfd;
 volatile sig_atomic_t end;
 volatile uint8_t **files[NB_FILES];
 
@@ -71,7 +72,6 @@ uint8_t ** encryptFile(volatile uint8_t **file, int fileSize, uint8_t **key, int
   return result;
 }
 
-
 /***************************************
  *              MATRIX
 ***************************************/
@@ -106,6 +106,51 @@ uint8_t * matrixToArray(void ** matrix, int size) {
   return array;
 }
 
+/***************************************
+ *              THREAD
+***************************************/
+
+void * thread(void *size) {
+  int fileSize = *(int *)size;
+  // Listen to client's requests
+  // TO DO : Don't know the size of the key yet but should be smaller than the size of the file so "sizeof(uint8_t)*fileSize*fileSize"
+  size_t requestSize = sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * fileSize * fileSize);
+  uint8_t *request = (uint8_t *)malloc(requestSize);
+
+  int newsockfd = saccept(sockfd);
+  int nbRead = sread(newsockfd, &(*request), requestSize);
+  while (nbRead > 0)
+  {
+    // Retreive key informations from the request
+    uint32_t fileIndex = *(uint32_t *) request;
+    uint32_t keySize = *(uint32_t *)(request + 4);
+    uint8_t *key = malloc(sizeof(uint8_t) * keySize);
+    key = (uint8_t *)(request + 8);
+
+    // Encrypte file with key
+    uint8_t ** keyMatrix = arrayToMatrix(key, keySize);
+    uint8_t ** encryptedMatrix = encryptFile(files[fileIndex], fileSize, keyMatrix, keySize);
+    uint8_t * encryptedArray = matrixToArray((void **) encryptedMatrix, fileSize);
+
+    // Generate response
+    size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + fileSize*fileSize*sizeof(uint8_t);
+    uint8_t * response = (uint8_t *) malloc(responseSize);
+    *(uint8_t *)response = 0; // The error code
+    *(uint32_t *)(response+1) = fileSize*fileSize;
+    for (int i = 5; i < (fileSize*fileSize)+5; i++)
+    {
+      response[i] = encryptedArray[i-5];
+    }
+    display(response, responseSize);
+    swrite(newsockfd, *(&response), responseSize);
+
+    nbRead = sread(newsockfd, *(&request), requestSize);
+  }
+  // Close client
+  sclose(newsockfd);
+  pthread_exit(NULL);
+}
+
 int main(int argc, char *argv[])
 {
   // Add Ctrl+C handling
@@ -130,50 +175,28 @@ int main(int argc, char *argv[])
   }
   printf("[+] Launched with options ... port : %i - threads used : %i - size of files (in bytes) : %i\n", port, nbThreads, fileSize);
 
+  // Initiate threads
+  pthread_t * threads = (pthread_t *) malloc(nbThreads*sizeof(pthread_t));
+
   // Initiate an array of 1000 files
   initFiles(fileSize);
 
   // Initiate the server
-  int sockfd = initSocketServer(port, nbThreads);
+  sockfd = initSocketServer(port, nbThreads);
 
-  // Listen to client's requests
-  // TO DO : Don't know the size of the key yet but should be smaller than the size of the file so "sizeof(uint8_t)*fileSize*fileSize"
-  size_t requestSize = sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * fileSize * fileSize);
-  uint8_t *request = (uint8_t *)malloc(requestSize);
   while (!end)
   {
-    int newsockfd = saccept(sockfd);
-    int nbRead = sread(newsockfd, &(*request), requestSize);
-    while (nbRead > 0)
-    {
-      // Retreive key informations from the request
-      uint32_t fileIndex = *(uint32_t *) request;
-      uint32_t keySize = *(uint32_t *)(request + 4);
-      uint8_t *key = malloc(sizeof(uint8_t) * keySize);
-      key = (uint8_t *)(request + 8);
-
-      // Encrypte file with key
-      uint8_t ** keyMatrix = arrayToMatrix(key, keySize);
-      uint8_t ** encryptedMatrix = encryptFile(files[fileIndex], fileSize, keyMatrix, keySize);
-      uint8_t * encryptedArray = matrixToArray((void **) encryptedMatrix, fileSize);
-
-      // Generate response
-      size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + fileSize*fileSize*sizeof(uint8_t);
-      uint8_t * response = (uint8_t *) malloc(responseSize);
-      *(uint8_t *)response = 0; // The error code
-      *(uint32_t *)(response+1) = fileSize*fileSize;
-      for (int i = 5; i < (fileSize*fileSize)+5; i++)
-      {
-        response[i] = encryptedArray[i-5];
+    for(int i=0; i<nbThreads; i++ ) {
+      int threadId = pthread_create(&threads[i], NULL, thread, &fileSize);
+      if (threadId) {
+         printf("Error:unable to create thread, %d\n", threadId);
+         exit(-1);
       }
-      display(response, responseSize);
-      swrite(newsockfd, *(&response), responseSize);
-
-      nbRead = sread(newsockfd, *(&request), requestSize);
     }
+    pthread_exit(NULL);
   }
 
-  // Close the connection
+  // Close server
   sclose(sockfd);
   return 0;
 }
