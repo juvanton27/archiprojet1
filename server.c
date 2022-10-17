@@ -113,11 +113,11 @@ uint8_t * matrixToArray(void ** matrix, int size) {
 void * thread(void *size) {
   int fileSize = *(int *)size;
   // Listen to client's requests
-  // TO DO : Don't know the size of the key yet but should be smaller than the size of the file so "sizeof(uint8_t)*fileSize*fileSize"
   size_t requestSize = sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * fileSize * fileSize);
   uint8_t *request = (uint8_t *)malloc(requestSize);
 
   int newsockfd = saccept(sockfd);
+  printf("Processing client %i ...\n", newsockfd);
   int nbRead = sread(newsockfd, &(*request), requestSize);
   while (nbRead > 0)
   {
@@ -141,13 +141,14 @@ void * thread(void *size) {
     {
       response[i] = encryptedArray[i-5];
     }
-    display(response, responseSize);
+    // display(response, responseSize);
     swrite(newsockfd, *(&response), responseSize);
 
     nbRead = sread(newsockfd, *(&request), requestSize);
   }
   // Close client
-  sclose(newsockfd);
+  printf("End client %i\n", newsockfd);
+  // sclose(newsockfd);
   pthread_exit(NULL);
 }
 
@@ -186,7 +187,8 @@ int main(int argc, char *argv[])
 
   while (!end)
   {
-    for(int i=0; i<nbThreads; i++ ) {
+    // TO DO: Fix threads
+    for(int i=0; i<nbThreads; i++) {
       int threadId = pthread_create(&threads[i], NULL, thread, &fileSize);
       if (threadId) {
          printf("Error:unable to create thread, %d\n", threadId);
