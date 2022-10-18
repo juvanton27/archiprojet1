@@ -79,12 +79,12 @@ int main(int argc, char **argv)
       size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + keyBytes*keyBytes*keyBytes*keyBytes*sizeof(uint8_t);
       uint8_t * response = malloc(responseSize);
       sread(sockfd, &(*response), responseSize);
-      uint8_t errorCode = *(uint8_t *)response;
-      uint32_t fileSize = *(uint32_t *)(response+1);
-      uint8_t * encryptedFile = (uint8_t *) malloc(fileSize*sizeof(uint8_t));
-      encryptedFile = (uint8_t *)(response+5);
-      printf("Error code : %i, size : %i, encrypted file : ", errorCode, fileSize);
-      display(encryptedFile, fileSize);
+      // uint8_t errorCode = *(uint8_t *)response;
+      // uint32_t fileSize = *(uint32_t *)(response+1);
+      // uint8_t * encryptedFile = (uint8_t *) malloc(fileSize*sizeof(uint8_t));
+      // encryptedFile = (uint8_t *)(response+5);
+      // printf("Error code : %i, size : %i, encrypted file : ", errorCode, fileSize);
+      // display(encryptedFile, fileSize);
       i++;
     }
     sleep(1);

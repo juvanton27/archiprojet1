@@ -19,5 +19,5 @@ utils.o: utils.c utils.h
 	$(CC) $(CCFLAGS) -c utils.c 
 
 clean : 
-	rm -f server client *.o 
+	rm -f server client *.o bwm.csv
 	clear
