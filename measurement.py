@@ -1,4 +1,6 @@
 # Must have bwm-ng installed
+# The CSV output format of bwm-ng is designed as
+# timestamp;iface_name;bytes_out/s;bytes_in/s;bytes_total/s;bytes_in;bytes_out;packets_out/s;packets_in/s;packets_total/s;packets_in;packets_out;errors_out/s;errors_in/s;errors_in;errors_out;bits_out/s;bits_in/s;bits_total/s;bits_in;bits_out\n
 
 import subprocess
 
