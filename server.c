@@ -48,7 +48,7 @@ int initSocketServer(int port, int nbThreads)
 {
   int sockfd = ssocket();
   sbind(port, sockfd);
-  slisten(sockfd, nbThreads);
+  slisten(sockfd, 100);
   printf("[+] Server is listening on port %i ...\n", port);
   return sockfd;
 }
@@ -162,7 +162,7 @@ void executeKey(Key *key)
   //   error = 0;
   // }
 
-  printf("ERR: %i, size: %i", 0, fileSize);
+  // printf("ERR: %i, size: %i", 0, fileSize);
   // display(response, responseSize);
 
   free(encryptedMatrix);

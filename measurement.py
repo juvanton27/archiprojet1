@@ -40,15 +40,31 @@ def launch(ip: str, port: int, nbClient: int, threads: int, fileSize: int, keySi
     server.send_signal(9)
 
 
+def mean(data):
+    total: int = 0
+    for d in data:
+        total += d
+    return total/data.size
+
+
 if __name__ == "__main__":
-    # launch(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(
-    #     sys.argv[5]), int(sys.argv[6]), int(sys.argv[7]), int(sys.argv[8]))
+    nbClient = [5, 25, 50]
+    packetSec = []
 
+    for i in nbClient:
+        # Launch implementation by nbClient
+        launch(sys.argv[1], int(sys.argv[2]), i, int(sys.argv[4]), int(
+            sys.argv[5]), int(sys.argv[6]), int(sys.argv[7]), int(sys.argv[8]))
+        # Retrieve data from CSV
+        timestamp, bytes_out_per_s, packets_out_per_sec = np.loadtxt(
+            'bwm.csv', unpack=True, delimiter=';', usecols=(0, 2, 7))
+        # Add mean
+        packetSec.append(mean(packets_out_per_sec))
 
-    timestamp, bytes_out_per_s, packets_out_per_sec = np.loadtxt(
-        'bwm.csv', unpack=True, delimiter=';', usecols=(0, 2, 7))
-
-    plt.plot(timestamp, packets_out_per_sec)
-    plt.xlabel("Time")
-    plt.ylabel("Packets out/s")
+    plt.plot(nbClient, packetSec)
+    plt.xlabel("Nombre d'utilisateur")
+    plt.ylabel("Moyenne de réponses par secondes")
     plt.show()
+
+
+# nombre de response / nb clients
