@@ -1,6 +1,13 @@
 #include "utils.h"
 
-#define BUFFER_SIZE 10000
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
+
+#define BUFFER_SIZE 9
 #define LOCAL_HOST "127.0.0.1"
 
 /***************************************
@@ -62,6 +69,10 @@ int main(int argc, char **argv)
   // Initiate the client
   sockfd = initSocketClient(server, port);
 
+  // Initiate log file
+  int fd = sopen("data/response_time.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
+  char buf[BUFFER_SIZE];
+
   // Send requests to the server
   int s = 0;
   while (s < sec && !end)
@@ -69,6 +80,10 @@ int main(int argc, char **argv)
     int i = 0;
     while (i < req)
     {
+      // Start duration counter
+      clock_t t;
+      t = clock();
+
       // Generate request
       size_t requestSize = sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * keyBytes * keyBytes);
       uint8_t * request = generateRequest(i, keyBytes);
@@ -76,9 +91,18 @@ int main(int argc, char **argv)
 
       // Retreive informations from the response
       // TO DO : Don't know the size of the encrypted file so have to take bigger but how much
-      // size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + keyBytes*keyBytes*keyBytes*keyBytes*sizeof(uint8_t);
-      // uint8_t * response = malloc(responseSize);
-      // sread(sockfd, &(*response), responseSize);
+      size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + keyBytes*keyBytes*keyBytes*keyBytes*sizeof(uint8_t);
+      uint8_t * response = malloc(responseSize);
+      sread(sockfd, &(*response), responseSize);
+
+      // Calculate duration
+      t = clock() - t;
+      int time_taken = ((double)t)/((clock_t)1); // in nanoseconde
+      sprintf(buf, "%d", time_taken);
+      strcat(buf, "\n");
+      swrite(fd, buf, strlen(buf));
+
+      // Dislay response from server
       // uint8_t errorCode = *(uint8_t *)response;
       // uint32_t fileSize = *(uint32_t *)(response+1);
       // uint8_t * encryptedFile = (uint8_t *) malloc(fileSize*sizeof(uint8_t));

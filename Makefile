@@ -19,5 +19,7 @@ utils.o: utils.c utils.h
 	$(CC) $(CCFLAGS) -c utils.c 
 
 clean : 
-	rm -f server client *.o bwm.csv
+	rm -f server client *.o *.log
+	touch data/server.log
+	touch data/response_time.log
 	clear

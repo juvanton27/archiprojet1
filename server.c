@@ -147,15 +147,17 @@ void executeKey(Key *key)
   uint8_t **encryptedMatrix = encryptFile(files[key->fileIndex], fileSize, key->keyMatrix, key->keySize);
   uint8_t *encryptedArray = matrixToArray((void **)encryptedMatrix, fileSize);
 
-  // // Generate response
-  // size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + fileSize * fileSize * sizeof(uint8_t);
-  // uint8_t *response = (uint8_t *)malloc(responseSize);
-  // *(uint8_t *)response = 0; // The error code
-  // *(uint32_t *)(response + 1) = fileSize;
-  // for (int i = 5; i < (fileSize * fileSize) + 5; i++)
-  // {
-  //   response[i] = encryptedArray[i - 5];
-  // }
+  // Generate response
+  size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + fileSize * fileSize * sizeof(uint8_t);
+  uint8_t *response = (uint8_t *)malloc(responseSize);
+  *(uint8_t *)response = 0; // The error code
+  *(uint32_t *)(response + 1) = fileSize;
+  for (int i = 5; i < (fileSize * fileSize) + 5; i++)
+  {
+    response[i] = encryptedArray[i - 5];
+  }
+
+  swrite(newsockfd, &(*response), responseSize);
 
   // if(error) {
   //   printf("ERR: %i\n", 1);
@@ -259,6 +261,7 @@ int main(int argc, char **argv)
     int nbRead = sread(newsockfd, &(*request), requestSize);
     while (nbRead > 0)
     {
+      printf("reçu\n");
       // Retreive key informations from the request
       uint32_t fileIndex = *(uint32_t *)request;
       uint32_t keySize = *(uint32_t *)(request + 4);
