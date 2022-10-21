@@ -43,27 +43,19 @@ if __name__ == "__main__":
             # Launch client
             launch(sys.argv[1], int(sys.argv[2]), i,
                 int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]))
-            print("fni")
-            responseTime.append(mean())
+            with open("data/result.csv", "a") as result:
+                result.write(f'{i}; {mean()}\n')
 
-        plt.plot(nbClients, responseTime)
-        plt.xlabel("Number of users")
-        plt.ylabel("Mean of response time (ns/10)")
-        plt.show()
-        
     # Calculate mean response time / request rate
     elif choice == 'r':
-        requestRates = [10, 100, 1000]
-        responseTime = []
+        requestRates = [10, 250, 500, 750, 1000]
+        # responseTime = []
 
         for i in requestRates:
             # Launch client
             launch(sys.argv[1], int(sys.argv[2]), 1,
                 int(sys.argv[3]), i, int(sys.argv[5]))
             
-            responseTime.append(mean())
-
-        plt.plot(requestRates, responseTime)
-        plt.xlabel("Request rate per second")
-        plt.ylabel("Mean of response time (ns/10)")
-        plt.show()
+            # responseTime.append(mean())
+            with open("data/result.csv", "a") as result:
+                result.write(f'{i}; {mean()}\n')
