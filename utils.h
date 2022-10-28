@@ -16,11 +16,22 @@
 #include <sys/ipc.h>
 #include <poll.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <time.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <sys/socket.h>
 
 
 //******************************************************
