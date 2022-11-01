@@ -9,6 +9,9 @@
 
 #define BUFFER_SIZE 9
 #define LOCAL_HOST "127.0.0.1"
+#define NPAGES 1000
+#define ARRAY_TYPE uint32_t
+#define MAX 1000
 
 /***************************************
  *              GLOBALS
@@ -16,6 +19,9 @@
 
 volatile sig_atomic_t end = 0;
 int sockfd;
+int port;
+char *server;
+int keysz;
 
 /***************************************
  *              SERVER
@@ -49,70 +55,90 @@ uint8_t *generateRequest(uint32_t index, uint32_t size)
   return request;
 }
 
+void *rcv(void *r)
+{
+	int ret;
+	int sockfd;
+  int receive_times[MAX];
+  struct sockaddr_in servaddr;
+  
+	// Creating socket file descriptor
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	{
+		perror("socket creation failed");
+		exit(EXIT_FAILURE);
+	}
+
+	memset(&servaddr, 0, sizeof(servaddr));
+	// Filling server information
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htons(port);
+	servaddr.sin_addr.s_addr = INADDR_ANY; // If doesnt work put server
+	connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
+	//Send file id
+	unsigned fileindex = htonl(rand() % NPAGES);
+	ret = send(sockfd, &fileindex, 4, 0);
+	//Send key size
+	int revkey = htonl(keysz);
+	ret = send(sockfd, &revkey, 4, 0);
+	//Send key
+  ARRAY_TYPE * key;
+  key = malloc(keysz*keysz*sizeof(ARRAY_TYPE));
+	ret = send(sockfd, key, sizeof(ARRAY_TYPE) *keysz *keysz, 0);
+	unsigned char error;
+	recv(sockfd, &error, 1, 0);
+	unsigned filesz;
+	recv(sockfd, &filesz, 4, 0);
+	if (filesz > 0)
+	{
+		long int left = ntohl(filesz);
+		char buffer[65536];
+		while (left > 0)
+		{
+			unsigned b = left;
+			if (b > 65536)
+				b = 65536;
+			left -= recv(sockfd, &buffer, b, 0);
+		}
+	}
+
+	unsigned t = (unsigned)(intptr_t) r;
+	receive_times[t] = getts();
+	close(sockfd);
+  return EXIT_SUCCESS;
+}
+
 int main(int argc, char **argv)
 {
-  // Add Ctrl+C handling
-  ssigaction(SIGINT, endClientHandler);
+	ssigaction(SIGINT, endClientHandler);
 
-  // Handle the args
-  char *server;
-  int port;
-  int keyBytes = atoi(argv[2]);
-  int req = atoi(argv[4]);
-  int sec = atoi(argv[6]);
-  char *line = argv[7];
-  char *search = ":";
-  server = strtok(line, search);
-  port = atoi(strtok(NULL, search));
-  printf("[+] Launched with options ... size of the key : %d  -  requests/second : %d  -  time of execution (in seconds) : %d  -  ip address : %s -   tcp port : %d \n", keyBytes, req, sec, server, port);
+	// Handle the args
+	keysz = atoi(argv[2]);
+	int rate = atoi(argv[4]);
+	int time = atoi(argv[6]);
+	char *line = argv[7];
+	char *search = ":";
+	server = strtok(line, search);
+	port = atoi(strtok(NULL, search));
+	printf("[+] Launched with options ... size of the key : %d  -  requests/second : %d  -  time of execution (in seconds) : %d  -  ip address : %s -   tcp port : %d \n", keysz, rate, time, server, port);
 
-  // Initiate the client
-  sockfd = initSocketClient(server, port);
+	int diffrate = 1000000000 / rate;
+  int i = 0;
+  int start,next = 0;
+  int sent_times[MAX];
+	while (getts() - start < (long unsigned) 1000000000 *time)
+	{
+		next += diffrate;
+		while (getts() < next)
+		{
+			usleep((next - getts()) / 1000);
+		}
 
-  // Initiate log file
-  int fd = sopen("data/response_time.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
-  char buf[BUFFER_SIZE];
+		sent_times[i] = getts();
+		pthread_t thread;
+		pthread_create(&thread, NULL, rcv, (void*)(intptr_t) i);
+		i++;
+	}
 
-  // Send requests to the server
-  int s = 0;
-  while (s < sec && !end)
-  {
-    int i = 0;
-    while (i < req)
-    {
-      // Start duration counter
-      clock_t t;
-      t = clock();
-
-      // Generate request
-      size_t requestSize = sizeof(uint32_t) + sizeof(u_int32_t) + (sizeof(uint8_t) * keyBytes * keyBytes);
-      uint8_t * request = generateRequest(i, keyBytes);
-      swrite(sockfd, &(*request), requestSize);
-
-      // Retreive informations from the response
-      // TO DO : Don't know the size of the encrypted file so have to take bigger but how much
-      size_t responseSize = sizeof(uint8_t) + sizeof(uint32_t) + keyBytes*keyBytes*keyBytes*keyBytes*sizeof(uint8_t);
-      uint8_t * response = malloc(responseSize);
-      sread(sockfd, &(*response), responseSize);
-
-      // Calculate duration
-      t = clock() - t;
-      int time_taken = ((double)t)/((clock_t)1); // in nanoseconde
-      sprintf(buf, "%d", time_taken);
-      strcat(buf, "\n");
-      swrite(fd, buf, strlen(buf));
-
-      // Dislay response from server
-      // uint8_t errorCode = *(uint8_t *)response;
-      // uint32_t fileSize = *(uint32_t *)(response+1);
-      // uint8_t * encryptedFile = (uint8_t *) malloc(fileSize*sizeof(uint8_t));
-      // encryptedFile = (uint8_t *)(response+5);
-      // printf("Error code : %i, size : %i, encrypted file : ", errorCode, fileSize);
-      // display(encryptedFile, fileSize);
-      i++;
-    }
-    sleep(1);
-    s++;
-  }
   return EXIT_SUCCESS;
 }
