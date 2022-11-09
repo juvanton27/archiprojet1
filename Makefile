@@ -1,5 +1,7 @@
 CC=gcc
-CCFLAGS=-D_DEFAULT_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -std=c11 -pedantic -Wvla -Wall -Werror -pthread -g
+CCFLAGS= -std=c11 -pedantic -Wvla -Wall -Wno-unused-variable -pthread -g -fno-unroll-loops -fno-tree-vectorize -O2
+
+#  -mno-avx -mno-avx2 -mno-avx512f
 
 all: server client
 

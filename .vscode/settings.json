@@ -4,6 +4,7 @@
         "inet.h": "c",
         "__bit_reference": "c",
         "__string": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "stdio.h": "c"
     }
 }
