@@ -66,7 +66,9 @@ void *rcv(void *r)
 	}
 
 	unsigned t = (unsigned)(intptr_t)r;
-	receive_times[t] = getts();
+	struct timeval end;
+	gettimeofday(&end, NULL);
+	receive_times[t] = end.tv_sec;
 	close(sockfd);
 }
 
@@ -83,20 +85,25 @@ int main(int argc, char **argv)
 	port = atoi(strtok(NULL, search));
 	printf("[+] Launched with options ... size of the key : %d  -  requests/second : %d  -  time of execution (in seconds) : %d  -  ip address : %s -   tcp port : %d \n", keysz, rate, time, server, port);
 
-	int diffrate = 1000000000 / rate;
+	int diffrate = rate;
 	int i = 0;
-	int start = 0;
 	int next = 0;
 	int sent_times[MAX];
-	while (getts() - start < (long unsigned)1000000000 * time)
+
+	struct timeval start;
+	struct timeval end;
+	gettimeofday(&start, NULL);
+	gettimeofday(&end, NULL);
+
+	while (end.tv_sec - start.tv_sec < time)
 	{
 		next += diffrate;
-		while (getts() < next)
+		while (end.tv_sec < next)
 		{
-			usleep((next - getts()) / 1000);
+			usleep((next - end.tv_sec) / 1000);
 		}
 
-		sent_times[i] = getts();
+		sent_times[i] = end.tv_sec;
 		pthread_t thread;
 		pthread_create(&thread, NULL, rcv, (void *)(intptr_t)i);
 		i++;
