@@ -7,6 +7,8 @@ void ** pages;
 int opt, nthreads, nbytes, port, verbose, client_sock;
 uint8_t err;
 
+int counter = 0;
+
 int connection_handler(void *socket_desc) {
   int fileid, keysz;
   //Get the socket descriptor
@@ -49,6 +51,7 @@ int connection_handler(void *socket_desc) {
       } 
     }
   }
+  printf("%d\n",counter+=1);
   send(sockfd, &err, 1, MSG_NOSIGNAL);
   unsigned sz = htonl(nbytes*nbytes*sizeof(ARRAY_TYPE));
   send(sockfd, &sz, 4, MSG_NOSIGNAL);

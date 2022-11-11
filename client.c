@@ -28,7 +28,6 @@ int initSocketClient(char *localhost, int port)
 
 void *rcv(void *r)
 {
-	printf("spawn\n");
 	counter+=1;
 	int ret;
 	int sockfd;
@@ -106,10 +105,8 @@ int main(int argc, char **argv)
 	while (((end.tv_sec*1000000)+end.tv_usec) - ((start.tv_sec*1000000)+start.tv_usec) < time*1000000)
 	{
 		next += diffrate;
-		printf("%li < %li\n", ((end.tv_sec*1000000)+end.tv_usec), next);
 		while (((end.tv_sec*1000000)+end.tv_usec) < next)
 		{
-			printf("sleeping...\n");
 			usleep(next - ((end.tv_sec*1000000)+end.tv_usec));
 			gettimeofday(&end, NULL);
 		}
@@ -119,7 +116,6 @@ int main(int argc, char **argv)
 		i++;
 		gettimeofday(&end, NULL);
 	}
-	printf("fin %d\n", counter);
 
 	return EXIT_SUCCESS;
 }
