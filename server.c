@@ -18,6 +18,7 @@ int connection_handler(void *socket_desc) {
   keysz = ntohl(keysz);
 
   ARRAY_TYPE * key;
+	key = malloc(keysz*keysz*sizeof(ARRAY_TYPE));
 
   unsigned tot = keysz*keysz * sizeof(ARRAY_TYPE); 
   unsigned done = 0;
@@ -43,7 +44,7 @@ int connection_handler(void *socket_desc) {
             int vline = (vstart + k) * nbytes + hstart;
             tot += key[ln * keysz + k] * file[vline + col]; 
           }
-          crypted[aline + col] = tot; 
+          // crypted[aline + col] = tot; 
         }
       } 
     }
@@ -53,6 +54,7 @@ int connection_handler(void *socket_desc) {
   send(sockfd, &sz, 4, MSG_NOSIGNAL);
   send(sockfd, crypted, nbytes*nbytes*sizeof(ARRAY_TYPE), MSG_NOSIGNAL);
 
+  free(key);
   free(crypted);
   sclose(sockfd);
 
@@ -101,6 +103,8 @@ int main(int argc, char **argv) {
   {
     connection_handler((void*)(intptr_t)client_sock);
   }
+
+  free(pages);
 
   return EXIT_SUCCESS;
 }

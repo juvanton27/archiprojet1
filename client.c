@@ -13,6 +13,9 @@ int sockfd;
 int port;
 char *server;
 int keysz;
+ARRAY_TYPE *key;
+
+int counter = 0;
 
 int initSocketClient(char *localhost, int port)
 {
@@ -25,11 +28,11 @@ int initSocketClient(char *localhost, int port)
 
 void *rcv(void *r)
 {
+	printf("spawn\n");
+	counter+=1;
 	int ret;
 	int sockfd;
 	int receive_times[MAX];
-	ARRAY_TYPE *key;
-	key = malloc(keysz * keysz * sizeof(ARRAY_TYPE));
 
 	// Creating socket file descriptor
 	sockfd = ssocket();
@@ -69,7 +72,7 @@ void *rcv(void *r)
 	struct timeval end;
 	gettimeofday(&end, NULL);
 	receive_times[t] = end.tv_sec;
-	close(sockfd);
+	sclose(sockfd);
 }
 
 int main(int argc, char **argv)
@@ -85,29 +88,38 @@ int main(int argc, char **argv)
 	port = atoi(strtok(NULL, search));
 	printf("[+] Launched with options ... size of the key : %d  -  requests/second : %d  -  time of execution (in seconds) : %d  -  ip address : %s -   tcp port : %d \n", keysz, rate, time, server, port);
 
-	int diffrate = rate;
+
+	key = malloc(keysz*keysz*sizeof(ARRAY_TYPE));
+	for(int i=0; i<keysz*keysz; i++) {
+		key[i] = i;
+	}
+
+	int diffrate = 1000000/rate;
 	int i = 0;
-	int next = 0;
-	int sent_times[MAX];
 
 	struct timeval start;
 	struct timeval end;
 	gettimeofday(&start, NULL);
-	gettimeofday(&end, NULL);
 
-	while (end.tv_sec - start.tv_sec < time)
+	long next = ((start.tv_sec*1000000)+start.tv_usec);
+	gettimeofday(&end, NULL);
+	while (((end.tv_sec*1000000)+end.tv_usec) - ((start.tv_sec*1000000)+start.tv_usec) < time*1000000)
 	{
 		next += diffrate;
-		while (end.tv_sec < next)
+		printf("%li < %li\n", ((end.tv_sec*1000000)+end.tv_usec), next);
+		while (((end.tv_sec*1000000)+end.tv_usec) < next)
 		{
-			usleep((next - end.tv_sec) / 1000);
+			printf("sleeping...\n");
+			usleep(next - ((end.tv_sec*1000000)+end.tv_usec));
+			gettimeofday(&end, NULL);
 		}
 
-		sent_times[i] = end.tv_sec;
 		pthread_t thread;
 		pthread_create(&thread, NULL, rcv, (void *)(intptr_t)i);
 		i++;
+		gettimeofday(&end, NULL);
 	}
+	printf("fin %d\n", counter);
 
 	return EXIT_SUCCESS;
 }
