@@ -72,11 +72,12 @@ int connection_handler(void *socket_desc)
 int connection_handler(void *socket_desc)
 {
   unsigned fileid;
-  int keysz;
+  unsigned done = 0;
+  int keysz, tread;
   // Get the socket descriptor
   int sockfd = (int)(intptr_t)socket_desc;
 
-  int tread = recv(sockfd, &fileid, 4, 0);
+  tread = recv(sockfd, &fileid, 4, 0);
   tread = recv(sockfd, &keysz, 4, 0);
   // Network byte order
   keysz = ntohl(keysz);
@@ -84,7 +85,6 @@ int connection_handler(void *socket_desc)
   ARRAY_TYPE key[keysz * keysz];
 
   unsigned tot = keysz * keysz * sizeof(ARRAY_TYPE);
-  unsigned done = 0;
   while (done < tot)
   {
     tread = recv(sockfd, key, tot - done, 0);
@@ -102,7 +102,7 @@ int connection_handler(void *socket_desc)
     {
       int hstart = j * keysz;
       int ln, col, k, r;
-      // Do the sub-matrix multiplication
+      // New sub-matrix multiplication
       for (ln = 0; ln < keysz; ln++)
       {
         int aline = (vstart + ln) * nbytes + hstart;
