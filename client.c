@@ -28,7 +28,7 @@ int initSocketClient(char *localhost, int port)
 
 void *rcv(void *r)
 {
-	counter+=1;
+	counter += 1;
 	int ret;
 	int sockfd;
 	int receive_times[MAX];
@@ -87,27 +87,27 @@ int main(int argc, char **argv)
 	port = atoi(strtok(NULL, search));
 	printf("[+] Launched with options ... size of the key : %d  -  requests/second : %d  -  time of execution (in seconds) : %d  -  ip address : %s -   tcp port : %d \n", keysz, rate, time, server, port);
 
-
-	key = malloc(keysz*keysz*sizeof(ARRAY_TYPE));
-	for(int i=0; i<keysz*keysz; i++) {
+	key = malloc(keysz * keysz * sizeof(ARRAY_TYPE));
+	for (int i = 0; i < keysz * keysz; i++)
+	{
 		key[i] = i;
 	}
 
-	int diffrate = 1000000/rate;
+	unsigned long diffrate = 1000000 / rate;
 	int i = 0;
 
 	struct timeval start;
 	struct timeval end;
 	gettimeofday(&start, NULL);
 
-	long next = ((start.tv_sec*1000000)+start.tv_usec);
+	unsigned long next = ((start.tv_sec * 1000000) + start.tv_usec);
 	gettimeofday(&end, NULL);
-	while (((end.tv_sec*1000000)+end.tv_usec) - ((start.tv_sec*1000000)+start.tv_usec) < time*1000000)
+	while (((end.tv_sec * 1000000) + end.tv_usec) - ((start.tv_sec * 1000000) + start.tv_usec) < (long unsigned)time * 1000000)
 	{
 		next += diffrate;
-		while (((end.tv_sec*1000000)+end.tv_usec) < next)
+		while (((end.tv_sec * 1000000) + end.tv_usec) < next)
 		{
-			usleep(next - ((end.tv_sec*1000000)+end.tv_usec));
+			usleep(next - ((end.tv_sec * 1000000) + end.tv_usec));
 			gettimeofday(&end, NULL);
 		}
 
