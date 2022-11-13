@@ -5,7 +5,7 @@
 
 unsigned **pages;
 int opt, nthreads, nbytes, port, verbose, client_sock;
-uint8_t err = 0;
+unsigned char err;
 unsigned sending;
 
 #if OPTIM == 0
@@ -21,7 +21,7 @@ int connection_handler(void *socket_desc)
   // Network byte order
   keysz = ntohl(keysz);
 
-  ARRAY_TYPE key[keysz*keysz];
+  ARRAY_TYPE key[keysz * keysz];
 
   unsigned tot = keysz * keysz * sizeof(ARRAY_TYPE);
   unsigned done = 0;
@@ -64,14 +64,70 @@ int connection_handler(void *socket_desc)
   send(sockfd, &sz, 4, MSG_NOSIGNAL);
   send(sockfd, crypted, nbytes * nbytes * sizeof(ARRAY_TYPE), MSG_NOSIGNAL);
 
+  sclose(sockfd);
+  free(crypted);
+  return EXIT_SUCCESS;
+}
+#else
+int connection_handler(void *socket_desc)
+{
+  unsigned fileid;
+  int keysz;
+  // Get the socket descriptor
+  int sockfd = (int)(intptr_t)socket_desc;
+
+  int tread = recv(sockfd, &fileid, 4, 0);
+  tread = recv(sockfd, &keysz, 4, 0);
+  // Network byte order
+  keysz = ntohl(keysz);
+
+  ARRAY_TYPE key[keysz * keysz];
+
+  unsigned tot = keysz * keysz * sizeof(ARRAY_TYPE);
+  unsigned done = 0;
+  while (done < tot)
+  {
+    tread = recv(sockfd, key, tot - done, 0);
+    done += tread;
+  }
+
+  int nr = nbytes / keysz;
+  ARRAY_TYPE *file = pages[fileid % NPAGES];
+  ARRAY_TYPE *crypted = malloc(nbytes * nbytes * sizeof(ARRAY_TYPE));
+  // Compute sub-matrices
+  for (int i = 0; i < nr; i++)
+  {
+    int vstart = i * keysz;
+    for (int j = 0; j < nr; j++)
+    {
+      int hstart = j * keysz;
+      int ln, col, k, r;
+      // Do the sub-matrix multiplication
+      for (ln = 0; ln < keysz; ln++)
+      {
+        int aline = (vstart + ln) * nbytes + hstart;
+        for (k = 0; k < keysz; k++)
+        {
+          int vline = (vstart + k) * nbytes + hstart;
+          r = key[ln * keysz + k];
+          for (col = 0; col < keysz; col++)
+          {
+            crypted[aline + col] += r * file[vline + col];
+          }
+        }
+      }
+    }
+  }
+
+  send(sockfd, &err, 1, MSG_NOSIGNAL);
+  unsigned sz = htonl(nbytes * nbytes * sizeof(ARRAY_TYPE));
+  send(sockfd, &sz, 4, MSG_NOSIGNAL);
+  send(sockfd, crypted, nbytes * nbytes * sizeof(ARRAY_TYPE), MSG_NOSIGNAL);
+
   free(crypted);
   sclose(sockfd);
 
   return EXIT_SUCCESS;
-}
-#else
-int connection_handler(void *socket_desc) {
-  printf("not implemented yet");
 }
 #endif
 

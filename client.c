@@ -3,7 +3,6 @@
 #define BUFFER_SIZE 9
 #define NPAGES 1000
 #define ARRAY_TYPE uint32_t
-#define MAX 1000
 
 /***************************************
  *              GLOBALS
@@ -31,7 +30,6 @@ void *rcv(void *r)
 	counter += 1;
 	int ret;
 	int sockfd;
-	int receive_times[MAX];
 
 	// Creating socket file descriptor
 	sockfd = ssocket();
@@ -66,11 +64,6 @@ void *rcv(void *r)
 			left -= recv(sockfd, &buffer, b, 0);
 		}
 	}
-
-	unsigned t = (unsigned)(intptr_t)r;
-	struct timeval end;
-	gettimeofday(&end, NULL);
-	receive_times[t] = end.tv_sec;
 	sclose(sockfd);
 }
 
