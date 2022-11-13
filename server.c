@@ -8,6 +8,7 @@ int opt, nthreads, nbytes, port, verbose, client_sock;
 uint8_t err = 0;
 unsigned sending;
 
+#if OPTIM == 0
 int connection_handler(void *socket_desc)
 {
   unsigned fileid;
@@ -68,6 +69,11 @@ int connection_handler(void *socket_desc)
 
   return EXIT_SUCCESS;
 }
+#else
+int connection_handler(void *socket_desc) {
+  printf("not implemented yet");
+}
+#endif
 
 int main(int argc, char **argv)
 {
