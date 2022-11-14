@@ -127,7 +127,6 @@ int main(int argc, char **argv)
 
 	char receive_title[100];
 	char send_title[100];
-	printf("oui\n");
 	sprintf(receive_title, "receive_time_key%d-rate%d-time%d.csv", keysz, rate, time);
 	sprintf(send_title, "send_time_key%d-rate%d-time%d.csv", keysz, rate, time);
 
