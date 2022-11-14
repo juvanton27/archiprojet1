@@ -124,11 +124,12 @@ int main(int argc, char **argv)
 		i++;
 		gettimeofday(&end, NULL);
 	}
+	printf("Terminé ...\n");
 
 	char receive_title[100];
 	char send_title[100];
-	sprintf(receive_title, "receive_time_key%d-rate%d-time%d.csv", keysz, rate, time);
-	sprintf(send_title, "send_time_key%d-rate%d-time%d.csv", keysz, rate, time);
+	sprintf(receive_title, "data/receive_time_key%d-rate%d-time%d.csv", keysz, rate, time);
+	sprintf(send_title, "data/send_time_key%d-rate%d-time%d.csv", keysz, rate, time);
 
 	int fd1 = sopen(receive_title, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 	int fd2 = sopen(send_title, O_WRONLY | O_TRUNC | O_CREAT, 0644);
