@@ -125,20 +125,24 @@ int main(int argc, char **argv)
 		gettimeofday(&end, NULL);
 	}
 
-	int fd1 = sopen("receive_time.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
-	int fd2 = sopen("send_time.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
+	char receive_title[100];
+	char send_title[100];
+	printf("oui\n");
+	sprintf(receive_title, "receive_time_key%d-rate%d-time%d.csv", keysz, rate, time);
+	sprintf(send_title, "send_time_key%d-rate%d-time%d.csv", keysz, rate, time);
+
+	int fd1 = sopen(receive_title, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+	int fd2 = sopen(send_title, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 	char buf[10];
 
 	for(int i=0; i<MAX; i++) {
-		sprintf(buf, "%d;%d", i, receive_times[i]);
-		strcat(buf, "\n");
+		sprintf(buf, "%d;%d\n", i, receive_times[i]);
 		swrite(fd1, buf, strlen(buf));
 		if(i>1) {
-			sprintf(buf, "%d;%d", i, sent_times[i]-sent_times[i-1]);
+			sprintf(buf, "%d;%d\n", i, sent_times[i]-sent_times[i-1]);
 		} else {
-			sprintf(buf, "%d;%d", i, sent_times[i]);
+			sprintf(buf, "%d;%d\n", i, sent_times[i]);
 		}
-		strcat(buf, "\n");
 		swrite(fd2, buf, strlen(buf));
 	}
 
