@@ -1,7 +1,11 @@
 #include "utils.h"
 
 #define NPAGES 1000
-#define ARRAY_TYPE uint32_t
+#if DOPTIM == 2
+  #define ARRAY_TYPE float
+#else
+  #define ARRAY_TYPE uint32_t
+#endif
 
 unsigned **pages;
 int opt, nthreads, nbytes, port, verbose, client_sock;

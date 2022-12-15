@@ -1,6 +1,7 @@
 client
 server
 server-optim
+server-float
 *.o
 *.log
 *.csv
