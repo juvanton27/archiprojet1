@@ -5,6 +5,8 @@
         "__bit_reference": "c",
         "__string": "c",
         "cstring": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "cmath": "c",
+        "complex": "c"
     }
 }

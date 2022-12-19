@@ -37,7 +37,5 @@ utils.o: utils.c utils.h
 	$(CC) $(CCFLAGS) -c utils.c 
 
 clean : 
-	rm -f $(files) *.o data/*.log data/*.csv
-	touch data/server.log
-	touch data/response_time.log
+	rm -f $(files) *.o data/*.csv
 	clear

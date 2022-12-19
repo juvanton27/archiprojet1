@@ -34,6 +34,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <inttypes.h>
+#include <math.h>
 
 //******************************************************
 // LECTURE CLAVIER

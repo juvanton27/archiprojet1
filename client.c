@@ -25,6 +25,13 @@ int initSocketClient(char *localhost, int port)
 	return socketfd;
 }
 
+//Generate a random exponential interval time
+uint64_t ran_expo(double lambda){
+    double u;
+    u = rand() / (RAND_MAX + 1.0);
+    return -log(1- u) * 1000000000  / lambda;
+}
+
 void *rcv(void *r)
 {
 	counter += 1;
@@ -86,7 +93,11 @@ int main(int argc, char **argv)
 		key[i] = i;
 	}
 
-	unsigned long diffrate = 1000000 / rate;
+	int fd = sopen("data/response_time_20.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
+  char buf[BUFFER_SIZE];
+
+	// unsigned long diffrate = 1000000 / rate;
+	unsigned long diffrate = ran_expo(rate);
 	int i = 0;
 
 	struct timeval start;
@@ -97,6 +108,10 @@ int main(int argc, char **argv)
 	gettimeofday(&end, NULL);
 	while (((end.tv_sec * 1000000) + end.tv_usec) - ((start.tv_sec * 1000000) + start.tv_usec) < (long unsigned)time * 1000000)
 	{
+		// Start duration counter
+		clock_t t;
+		t = clock();
+
 		next += diffrate;
 		while (((end.tv_sec * 1000000) + end.tv_usec) < next)
 		{
@@ -108,7 +123,15 @@ int main(int argc, char **argv)
 		pthread_create(&thread, NULL, rcv, (void *)(intptr_t)i);
 		i++;
 		gettimeofday(&end, NULL);
+
+		// Calculate duration
+		t = clock() - t;
+		int time_taken = ((double)t)/((clock_t)1); // in nanoseconde
+		sprintf(buf, "%d", time_taken);
+		strcat(buf, "\n");
+		swrite(fd, buf, strlen(buf));
 	}
+	sclose(fd);
 
 	return EXIT_SUCCESS;
 }
