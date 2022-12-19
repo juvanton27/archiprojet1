@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 		key[i] = i;
 	}
 
-	int fd = sopen("data/response_time_20.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
+	int fd = sopen("data/response_time_1.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
   char buf[BUFFER_SIZE];
 
 	// unsigned long diffrate = 1000000 / rate;

@@ -7,11 +7,11 @@ import matplotlib.cbook as cbook
 import numpy as np
 import pandas as pd
 
-rate_to_measure = [2, 10]
+rate_to_measure = [1, 2, 5, 10]
 mean = {}
 
 for val in rate_to_measure:
-  with open(f'data/response_time_{val}.log') as logs:
+  with open(f'data/phase4/response_time_{val}.log') as logs:
     counter = 0
     response_time = 0
     for log in logs.readlines():

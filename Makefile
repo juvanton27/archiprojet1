@@ -37,5 +37,5 @@ utils.o: utils.c utils.h
 	$(CC) $(CCFLAGS) -c utils.c 
 
 clean : 
-	rm -f $(files) *.o data/*.csv
+	rm -f $(files) *.o data/*.log
 	clear
