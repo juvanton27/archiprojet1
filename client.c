@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 		key[i] = i;
 	}
 
-	int fd = sopen("data/response_time_1.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
+	int fd = sopen("data/phase4/response_time_8_181_requests.log", O_WRONLY | O_TRUNC | O_CREAT, 0644);
   char buf[BUFFER_SIZE];
 
 	// unsigned long diffrate = 1000000 / rate;
@@ -126,7 +126,8 @@ int main(int argc, char **argv)
 
 		// Calculate duration
 		t = clock() - t;
-		int time_taken = ((double)t)/((clock_t)1); // in nanoseconde
+		printf("%lu\n", t);
+		int time_taken = ((double)t); // in seconds/1.000.000
 		sprintf(buf, "%d", time_taken);
 		strcat(buf, "\n");
 		swrite(fd, buf, strlen(buf));
