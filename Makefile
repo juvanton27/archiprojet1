@@ -1,16 +1,16 @@
 CC=gcc
 CCFLAGS= -std=c11 -pedantic -Wvla -Wall -Wno-unused-variable -pthread -g -fno-unroll-loops -fno-tree-vectorize -O2 #-mno-avx -mno-avx2 -mno-avx512f
 
-files=server server-optim server-float client
+files=server-queue server-optim server-float client-queue
 
 all: $(files)
 
 # SERVER
-server : server.o 
-	$(CC) $(CCFLAGS) -o server server.o utils.o
+server-queue : server-queue.o 
+	$(CC) $(CCFLAGS) -o server-queue server-queue.o utils.o
 
-server.o: server.c utils.o
-	$(CC) -DOPTIM=0 $(CCFLAGS) -c server.c -o server.o
+server-queue.o: server.c utils.o
+	$(CC) -DOPTIM=0 $(CCFLAGS) -c server.c -o server-queue.o
 
 # SERVER-OPTIM
 server-optim : server-optim.o 
@@ -27,11 +27,11 @@ server-float.o: server.c utils.o
 	$(CC) -DOPTIM=2 $(CCFLAGS) -c server.c -o server-float.o
 
 # CLIENT
-client : client.o 
-	$(CC) $(CCFLAGS) -o client client.o utils.o
+client-queue : client-queue.o 
+	$(CC) $(CCFLAGS) -o client-queue client-queue.o utils.o -lm
 
-client.o: client.c utils.o
-	$(CC) $(CCFLAGS) -c client.c -o client.o
+client-queue.o: client.c utils.o
+	$(CC) $(CCFLAGS) -c client.c -o client-queue.o
 
 utils.o: utils.c utils.h
 	$(CC) $(CCFLAGS) -c utils.c 
